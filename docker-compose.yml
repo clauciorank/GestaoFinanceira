@@ -1,0 +1,118 @@
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: ./API Python
+      dockerfile: Dockerfile
+    container_name: api_python
+    ports:
+      - "8000:8001"
+    environment:
+      - DATABASE_URL=mysql+pymysql://${MYSQL_USER}:${MYSQL_PASSWORD}@db:3306/gestor_financeiro
+      - WHISPER_MODE=local
+      - WHISPER_URL=http://whisper:8000/transcribe
+      - LLM_MODE=gemini
+      - LLM_URL=http://vllm:8000/v1
+      - LLM_API_KEY=EMPTY
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+    depends_on:
+      db:
+        condition: service_healthy
+      whisper:
+        condition: service_started
+      # vllm:
+      #   condition: service_started
+    networks:
+      - app_network
+
+  db:
+    image: mysql:8.0
+    container_name: mysql_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: gestor_financeiro 
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app_network
+
+  metabase:
+    image: metabase/metabase:latest
+    container_name: metabase
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      MB_DB_TYPE: mysql
+      MB_DB_DBNAME: metabase_internal
+      MB_DB_PORT: 3306
+      MB_DB_USER: ${MYSQL_USER}
+      MB_DB_PASS: ${MYSQL_PASSWORD}
+      MB_DB_HOST: db
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - metabase_data:/metabase-data
+    networks:
+      - app_network
+
+  whisper:
+    build:
+      context: ./whisper
+      dockerfile: Dockerfile
+    container_name: whisper_service
+    ports:
+      - "8001:8000"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    volumes:
+      - ./whisper_models:/models
+    networks:
+      - app_network
+
+  # vllm:
+  #   image: vllm/vllm-openai:latest
+  #   container_name: vllm_service
+  #   ports:
+  #     - "8002:8000"
+  #   environment:
+  #     - HUGGING_FACE_HUB_TOKEN=${HUGGING_FACE_HUB_TOKEN}
+  #   volumes:
+  #     - huggingface_cache:/root/.cache/huggingface
+  #   command: --model neuralmagic/Llama-3.2-3B-Instruct-quantized.w8a8 --gpu-memory-utilization 0.7 --max-model-len 8192
+  #   deploy:
+  #     resources:
+  #       reservations:
+  #         devices:
+  #           - driver: nvidia
+  #             count: 1
+  #             capabilities: [gpu]
+  #   networks:
+  #     - app_network
+
+volumes:
+  db_data:
+  metabase_data:
+  huggingface_cache:
+
+networks:
+  app_network:
+    driver: bridge

@@ -1,0 +1,3 @@
+# Este arquivo mantém o diretório certs/ no Git
+# Os certificados gerados serão ignorados pelo .gitignore
+

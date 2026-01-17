@@ -1,0 +1,1697 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestor Financeiro</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .subtitle {
+            color: #666;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #eee;
+        }
+
+        .tab {
+            padding: 12px 24px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            color: #666;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+            font-weight: bold;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        input[type="file"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .result {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .result.success {
+            background: #d4edda;
+            border: 2px solid #28a745;
+            color: #155724;
+        }
+
+        .result.error {
+            background: #f8d7da;
+            border: 2px solid #dc3545;
+            color: #721c24;
+        }
+
+        .result.active {
+            display: block;
+        }
+
+        .result h3 {
+            margin-bottom: 10px;
+        }
+
+        .result-item {
+            margin: 8px 0;
+            padding: 8px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 4px;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .gastos-list {
+            margin-top: 30px;
+        }
+
+        .gasto-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 4px solid #667eea;
+            word-break: break-word;
+            overflow-wrap: break-word;
+        }
+
+        .gasto-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .gasto-valor {
+            font-size: 20px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .gasto-categoria {
+            background: #667eea;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+        }
+
+        .gasto-item {
+            color: #333;
+            font-weight: 500;
+        }
+
+        .gasto-data {
+            color: #666;
+            font-size: 12px;
+            margin-top: 8px;
+        }
+
+        .btn-delete {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .btn-delete:hover {
+            background: #c82333;
+        }
+
+        .btn-edit {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-right: 5px;
+        }
+
+        .btn-edit:hover {
+            background: #5568d3;
+        }
+
+        .gasto-actions {
+            margin-top: 10px;
+            display: flex;
+            gap: 5px;
+        }
+
+        /* Modal de Edição */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            animation: fadeIn 0.3s;
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 12px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.3s;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            color: #333;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            color: #999;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .close-modal:hover {
+            color: #333;
+        }
+
+        .modal-form-group {
+            margin-bottom: 20px;
+        }
+
+        .modal-form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .modal-form-group input,
+        .modal-form-group select,
+        .modal-form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        .modal-form-group input:focus,
+        .modal-form-group select:focus,
+        .modal-form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .modal-form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 25px;
+        }
+
+        .btn-cancel {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn-cancel:hover {
+            background: #5a6268;
+        }
+
+        .btn-save {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .btn-save:hover {
+            background: #5568d3;
+        }
+
+        /* Modal de Permissão de Microfone */
+        .permission-modal {
+            text-align: center;
+        }
+
+        .permission-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+
+        .permission-steps {
+            text-align: left;
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .permission-steps ol {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+
+        .permission-steps li {
+            margin: 8px 0;
+            line-height: 1.6;
+        }
+
+        .btn-request-permission {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            margin-top: 15px;
+            width: 100%;
+        }
+
+        .btn-request-permission:hover {
+            background: #218838;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 12px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border: 1px solid #f5c6cb;
+        }
+
+        .android-tips {
+            background: #fff3cd;
+            color: #856404;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border: 1px solid #ffeaa7;
+        }
+
+        .android-tips strong {
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        /* Estilos para gravação de áudio */
+        .audio-recorder {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .recorder-controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .btn-record {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 50%;
+            font-size: 24px;
+            cursor: pointer;
+            width: 70px;
+            height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
+        }
+
+        .btn-record:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(220, 53, 69, 0.4);
+        }
+
+        .btn-record.recording {
+            background: #28a745;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.1);
+            }
+        }
+
+        .btn-stop {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            display: none;
+        }
+
+        .btn-stop.active {
+            display: block;
+        }
+
+        .recording-status {
+            color: #dc3545;
+            font-weight: bold;
+            margin: 10px 0;
+            display: none;
+        }
+
+        .recording-status.active {
+            display: block;
+        }
+
+        .recording-timer {
+            font-size: 18px;
+            font-weight: bold;
+            color: #dc3545;
+            margin: 10px 0;
+        }
+
+        .audio-preview {
+            margin: 15px 0;
+            display: none;
+        }
+
+        .audio-preview.active {
+            display: block;
+        }
+
+        .audio-preview audio {
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .divider {
+            text-align: center;
+            margin: 25px 0;
+            color: #999;
+            position: relative;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 40%;
+            height: 1px;
+            background: #ddd;
+        }
+
+        .divider::before {
+            left: 0;
+        }
+
+        .divider::after {
+            right: 0;
+        }
+
+        @media (max-width: 600px) {
+            .tabs {
+                flex-wrap: wrap;
+            }
+
+            .tab {
+                width: calc(50% - 5px);
+                text-align: center;
+                padding: 10px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>💰 Gestor Financeiro</h1>
+        <p class="subtitle">Registre seus gastos através de texto ou áudio</p>
+
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('texto', event)">📝 Texto</button>
+            <button class="tab" onclick="switchTab('audio', event)">🎤 Áudio</button>
+            <button class="tab" onclick="switchTab('manual', event)">✍️ Manual</button>
+            <button class="tab" onclick="switchTab('gastos', event)">📊 Meus Gastos</button>
+        </div>
+
+        <!-- Aba de Texto -->
+        <div id="tab-texto" class="tab-content active">
+            <form id="form-texto" onsubmit="processarTexto(event)">
+                <div class="form-group">
+                    <label for="texto">Digite ou cole o texto do gasto:</label>
+                    <textarea id="texto" placeholder="Ex: Gastei 50 reais com almoço hoje" required></textarea>
+                </div>
+                <button type="submit" class="btn" id="btn-texto">Processar</button>
+            </form>
+            <div class="loading" id="loading-texto">
+                <div class="spinner"></div>
+                <p>Processando...</p>
+            </div>
+            <div class="result" id="result-texto"></div>
+        </div>
+
+        <!-- Aba de Áudio -->
+        <div id="tab-audio" class="tab-content">
+            <!-- Gravação de Áudio -->
+            <div class="audio-recorder">
+                <h3 style="margin-bottom: 20px; color: #333;">🎤 Gravar Áudio</h3>
+                <div class="recorder-controls">
+                    <button class="btn-record" id="btn-record" onclick="iniciarGravacao()" title="Iniciar gravação">
+                        🎤
+                    </button>
+                    <button class="btn-stop active" id="btn-stop" onclick="pararGravacao()" style="display: none;">
+                        ⏹️ Parar
+                    </button>
+                </div>
+                <div class="recording-status" id="recording-status">
+                    🔴 Gravando...
+                </div>
+                <div class="recording-timer" id="recording-timer" style="display: none;">00:00</div>
+                <div class="audio-preview" id="audio-preview">
+                    <p>Áudio gravado:</p>
+                    <audio id="audio-player" controls></audio>
+                    <button type="button" class="btn" onclick="enviarAudioGravado()" style="margin-top: 10px;">
+                        📤 Enviar Áudio Gravado
+                    </button>
+                </div>
+            </div>
+
+            <div class="divider">OU</div>
+
+            <!-- Upload de Arquivo -->
+            <form id="form-audio" onsubmit="processarAudio(event)">
+                <div class="form-group">
+                    <label for="audio">Selecione um arquivo de áudio:</label>
+                    <input type="file" id="audio" accept="audio/*">
+                </div>
+                <button type="submit" class="btn" id="btn-audio">📁 Processar Arquivo</button>
+            </form>
+            <div class="loading" id="loading-audio">
+                <div class="spinner"></div>
+                <p>Transcrevendo e processando...</p>
+            </div>
+            <div class="result" id="result-audio"></div>
+        </div>
+
+        <!-- Aba Manual -->
+        <div id="tab-manual" class="tab-content">
+            <form id="form-manual" onsubmit="adicionarGastoManual(event)">
+                <div class="form-group">
+                    <label for="manual-valor">Valor (R$):</label>
+                    <input type="number" id="manual-valor" step="0.01" min="0.01" placeholder="0.00" required
+                        style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 14px;">
+                </div>
+
+                <div class="form-group">
+                    <label for="manual-item">Item:</label>
+                    <input type="text" id="manual-item" placeholder="O que você comprou?" required
+                        style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 14px;">
+                </div>
+
+                <div class="form-group">
+                    <label for="manual-categoria">Categoria:</label>
+                    <select id="manual-categoria" required
+                        style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 14px; background-color: white;">
+                        <option value="" disabled selected>Selecione uma categoria</option>
+                        <option value="Alimentação">Alimentação</option>
+                        <option value="Transporte">Transporte</option>
+                        <option value="Lazer">Lazer</option>
+                        <option value="Saúde">Saúde</option>
+                        <option value="Moradia">Moradia</option>
+                        <option value="Bebida">Bebida</option>
+                        <option value="Outros">Outros</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="manual-pagamento">Meio de Pagamento:</label>
+                    <select id="manual-pagamento"
+                        style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 14px; background-color: white;">
+                        <option value="" disabled selected>Selecione um meio de pagamento</option>
+                        <option value="Crédito">Crédito</option>
+                        <option value="Débito">Débito</option>
+                        <option value="Refeição">Refeição</option>
+                        <option value="Pix">Pix</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn" id="btn-manual">Adicionar Gasto</button>
+            </form>
+            <div class="result" id="result-manual"></div>
+        </div>
+
+        <!-- Aba de Gastos -->
+        <div id="tab-gastos" class="tab-content">
+            <div class="gastos-list" id="gastos-list">
+                <p>Carregando gastos...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Permissão de Microfone -->
+    <div id="modal-permissao" class="modal">
+        <div class="modal-content permission-modal">
+            <div class="modal-header">
+                <h2>🎤 Permissão de Microfone</h2>
+                <button class="close-modal" onclick="fecharModalPermissao()">&times;</button>
+            </div>
+            <div class="permission-icon">🎤</div>
+            <p>Para gravar áudio, precisamos da sua permissão para acessar o microfone.</p>
+
+            <div id="android-tips" class="android-tips" style="display: none;">
+                <strong>📱 Dicas para Android:</strong>
+                <ol>
+                    <li>Toque em <strong>"Permitir"</strong> quando o navegador solicitar</li>
+                    <li>Se não aparecer, vá em <strong>Configurações → Aplicativos → Chrome → Permissões →
+                            Microfone</strong></li>
+                    <li>Certifique-se de que a permissão está <strong>ativada</strong></li>
+                    <li>Recarregue a página após ativar a permissão</li>
+                </ol>
+            </div>
+
+            <div id="permission-error" class="error-message" style="display: none;">
+                <strong>❌ Erro ao acessar o microfone</strong>
+                <p id="error-details"></p>
+            </div>
+
+            <div id="context-warning" class="android-tips"
+                style="display: none; background: #d1ecf1; color: #0c5460; border-color: #bee5eb;">
+                <strong>⚠️ Conexão Não Segura Detectada:</strong>
+                <p>O acesso ao microfone <strong>requer HTTPS</strong> ou localhost por questões de segurança do
+                    navegador.</p>
+                <p><strong>📱 Para usar no celular:</strong></p>
+                <ol style="margin-top: 10px; padding-left: 20px;">
+                    <li>Configure HTTPS no servidor (veja HTTPS.md)</li>
+                    <li>Ou acesse via <strong>localhost</strong> se estiver na mesma rede</li>
+                    <li>Ou use um túnel como <strong>ngrok</strong> ou <strong>cloudflared</strong> para HTTPS gratuito
+                    </li>
+                </ol>
+                <p style="margin-top: 10px;"><strong>Protocolo atual:</strong> <span id="current-protocol"></span></p>
+            </div>
+
+            <div class="permission-steps">
+                <strong>Como permitir acesso:</strong>
+                <ol>
+                    <li>Clique no botão abaixo</li>
+                    <li>Quando o navegador solicitar, clique em <strong>"Permitir"</strong></li>
+                    <li>Se não aparecer, verifique as configurações do navegador</li>
+                    <li>Após configurar, clique em "Tentar Novamente"</li>
+                </ol>
+            </div>
+
+            <button class="btn-request-permission" onclick="solicitarPermissaoMicrofone()" id="btn-request-permission">
+                🎤 Solicitar Permissão de Microfone
+            </button>
+            <button class="btn-request-permission" onclick="tentarNovamentePermissao()" id="btn-try-again"
+                style="display: none; background: #17a2b8; margin-top: 10px;">
+                🔄 Tentar Novamente
+            </button>
+            <button class="btn-request-permission" onclick="recarregarPagina()" id="btn-reload"
+                style="display: none; background: #ffc107; color: #333; margin-top: 10px;">
+                🔄 Recarregar Página
+            </button>
+            <button class="btn-cancel" onclick="fecharModalPermissao()" style="margin-top: 10px; width: 100%;">
+                Cancelar
+            </button>
+        </div>
+    </div>
+
+    <!-- Modal de Edição -->
+    <div id="modal-editar" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>✏️ Editar Gasto</h2>
+                <button class="close-modal" onclick="fecharModal()">&times;</button>
+            </div>
+            <form id="form-editar" onsubmit="salvarEdicao(event)">
+                <input type="hidden" id="edit-gasto-id">
+
+                <div class="modal-form-group">
+                    <label for="edit-valor">Valor (R$):</label>
+                    <input type="number" id="edit-valor" step="0.01" min="0.01" required>
+                </div>
+
+                <div class="modal-form-group">
+                    <label for="edit-item">Item:</label>
+                    <input type="text" id="edit-item" required>
+                </div>
+
+                <div class="modal-form-group">
+                    <label for="edit-categoria">Categoria:</label>
+                    <select id="edit-categoria" required>
+                        <option value="Alimentação">Alimentação</option>
+                        <option value="Transporte">Transporte</option>
+                        <option value="Lazer">Lazer</option>
+                        <option value="Saúde">Saúde</option>
+                        <option value="Moradia">Moradia</option>
+                        <option value="Moradia">Moradia</option>
+                        <option value="Bebida">Bebida</option>
+                        <option value="Outros">Outros</option>
+                    </select>
+                </div>
+
+                <div class="modal-form-group">
+                    <label for="edit-pagamento">Meio de Pagamento:</label>
+                    <select id="edit-pagamento">
+                        <option value="">Selecione...</option>
+                        <option value="Crédito">Crédito</option>
+                        <option value="Débito">Débito</option>
+                        <option value="Refeição">Refeição</option>
+                        <option value="Pix">Pix</option>
+                    </select>
+                </div>
+
+                <div class="modal-form-group">
+                    <label for="edit-descricao">Descrição Original (opcional):</label>
+                    <textarea id="edit-descricao" placeholder="Texto original que gerou o gasto"></textarea>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" onclick="fecharModal()">Cancelar</button>
+                    <button type="submit" class="btn-save">💾 Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '/api';
+
+        // Variáveis para gravação de áudio
+        let mediaRecorder = null;
+        let audioChunks = [];
+        let audioBlob = null;
+        let recordingTimer = null;
+        let recordingStartTime = null;
+
+        // Verifica se é Android
+        function isAndroid() {
+            return /Android/i.test(navigator.userAgent);
+        }
+
+        // Verifica se está em contexto seguro (HTTPS ou localhost)
+        function isSecureContext() {
+            return window.isSecureContext ||
+                location.protocol === 'https:' ||
+                location.hostname === 'localhost' ||
+                location.hostname === '127.0.0.1' ||
+                location.hostname === '[::1]';
+        }
+
+        // Verifica se getUserMedia está disponível
+        function isGetUserMediaSupported() {
+            return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+        }
+
+        // Verifica permissão do microfone
+        async function verificarPermissaoMicrofone() {
+            try {
+                const result = await navigator.permissions.query({ name: 'microphone' });
+                return result.state; // 'granted', 'denied', ou 'prompt'
+            } catch (e) {
+                // Alguns navegadores não suportam navigator.permissions
+                return 'prompt';
+            }
+        }
+
+        function abrirModalPermissao() {
+            const modal = document.getElementById('modal-permissao');
+            modal.classList.add('active');
+
+            // Verifica contexto seguro
+            const secureContext = isSecureContext();
+            const contextWarning = document.getElementById('context-warning');
+            const currentProtocol = document.getElementById('current-protocol');
+
+            if (!secureContext) {
+                if (contextWarning) {
+                    contextWarning.style.display = 'block';
+                }
+                if (currentProtocol) {
+                    currentProtocol.textContent = location.protocol + '//' + location.hostname;
+                    currentProtocol.style.color = '#dc3545';
+                    currentProtocol.style.fontWeight = 'bold';
+                }
+            } else {
+                if (contextWarning) {
+                    contextWarning.style.display = 'none';
+                }
+            }
+
+            // Verifica suporte a getUserMedia
+            if (!isGetUserMediaSupported()) {
+                document.getElementById('permission-error').style.display = 'block';
+                document.getElementById('error-details').innerHTML =
+                    'Seu navegador não suporta acesso ao microfone. Tente usar Chrome, Firefox ou Edge atualizado.';
+                return;
+            }
+
+            // Mostra dicas específicas para Android
+            if (isAndroid()) {
+                document.getElementById('android-tips').style.display = 'block';
+            } else {
+                document.getElementById('android-tips').style.display = 'none';
+            }
+
+            // Esconde mensagens de erro anteriores
+            document.getElementById('permission-error').style.display = 'none';
+            document.getElementById('btn-try-again').style.display = 'none';
+            document.getElementById('btn-reload').style.display = 'none';
+            document.getElementById('btn-request-permission').style.display = 'block';
+        }
+
+        function fecharModalPermissao() {
+            document.getElementById('modal-permissao').classList.remove('active');
+            document.getElementById('permission-error').style.display = 'none';
+        }
+
+        async function solicitarPermissaoMicrofone() {
+            try {
+                console.log('🔍 solicitarPermissaoMicrofone chamada');
+
+                const errorDiv = document.getElementById('permission-error');
+                const errorDetails = document.getElementById('error-details');
+                const btnRequest = document.getElementById('btn-request-permission');
+                const btnTryAgain = document.getElementById('btn-try-again');
+                const btnReload = document.getElementById('btn-reload');
+
+                // Verifica se os elementos existem
+                if (!errorDiv || !errorDetails || !btnRequest) {
+                    console.error('❌ Elementos do DOM não encontrados');
+                    alert('Erro: Elementos da interface não encontrados. Recarregue a página.');
+                    return;
+                }
+
+                // Esconde erros anteriores
+                errorDiv.style.display = 'none';
+                if (btnTryAgain) btnTryAgain.style.display = 'none';
+                if (btnReload) btnReload.style.display = 'none';
+
+                // Verifica contexto seguro
+                const secureContext = isSecureContext();
+                console.log('🔒 Contexto seguro:', secureContext, 'Protocolo:', location.protocol, 'Hostname:', location.hostname);
+
+                if (!secureContext) {
+                    console.warn('⚠️ Contexto não seguro detectado');
+                    errorDiv.style.display = 'block';
+                    const protocolo = location.protocol;
+                    const hostname = location.hostname;
+
+                    let solucoes = '';
+                    if (isAndroid()) {
+                        solucoes = `
+                            <br><br><strong>📱 Soluções para Android:</strong>
+                            <ol style="text-align: left; margin: 10px 0;">
+                                <li><strong>Opção 1 - HTTPS:</strong> Configure HTTPS no servidor (veja HTTPS.md)</li>
+                                <li><strong>Opção 2 - Túnel HTTPS:</strong> Use ngrok ou cloudflared para criar túnel HTTPS gratuito</li>
+                                <li><strong>Opção 3 - Localhost:</strong> Se estiver na mesma rede, acesse via localhost:8001</li>
+                            </ol>
+                            <p><strong>Protocolo atual:</strong> <span style="color: #dc3545; font-weight: bold;">${protocolo}//${hostname}</span></p>
+                            <p style="color: #856404;"><strong>⚠️ Navegadores bloqueiam microfone em conexões HTTP por segurança.</strong></p>
+                        `;
+                    } else {
+                        solucoes = `
+                            <br><br><strong>💡 Soluções:</strong>
+                            <ul style="text-align: left; margin: 10px 0;">
+                                <li>Configure HTTPS no servidor</li>
+                                <li>Ou use localhost se estiver na mesma máquina</li>
+                                <li>Ou use um túnel HTTPS (ngrok, cloudflared)</li>
+                            </ul>
+                            <p><strong>Protocolo atual:</strong> <span style="color: #dc3545;">${protocolo}</span></p>
+                        `;
+                    }
+
+                    errorDetails.innerHTML =
+                        '⚠️ <strong>Conexão não segura detectada!</strong><br>' +
+                        'O acesso ao microfone requer HTTPS ou localhost por questões de segurança do navegador.' +
+                        solucoes;
+                    return;
+                }
+
+                // Verifica suporte
+                const hasSupport = isGetUserMediaSupported();
+                console.log('🎤 Suporte getUserMedia:', hasSupport);
+                console.log('mediaDevices disponível:', !!navigator.mediaDevices);
+
+                if (!hasSupport) {
+                    console.error('❌ getUserMedia não suportado');
+                    errorDiv.style.display = 'block';
+                    errorDetails.innerHTML =
+                        'Seu navegador não suporta acesso ao microfone. Tente usar Chrome, Firefox ou Edge atualizado.';
+                    return;
+                }
+
+                // Atualiza botão
+                btnRequest.disabled = true;
+                btnRequest.textContent = '⏳ Solicitando...';
+                console.log('✅ Iniciando solicitação de permissão...');
+
+                try {
+                    // Tenta diferentes configurações de áudio para Android
+                    const constraints = [
+                        { audio: true },
+                        { audio: { echoCancellation: false } },
+                        { audio: { echoCancellation: true, noiseSuppression: false } },
+                        { audio: { sampleRate: 44100 } }
+                    ];
+
+                    let stream = null;
+                    let lastError = null;
+
+                    // Tenta cada configuração até uma funcionar
+                    for (const constraint of constraints) {
+                        try {
+                            console.log('Tentando com constraints:', constraint);
+                            stream = await navigator.mediaDevices.getUserMedia(constraint);
+                            console.log('Sucesso com constraints:', constraint);
+                            break;
+                        } catch (err) {
+                            console.log('Falhou com constraints:', constraint, err);
+                            lastError = err;
+                            continue;
+                        }
+                    }
+
+                    if (!stream) {
+                        throw lastError || new Error('Não foi possível acessar o microfone');
+                    }
+
+                    // Se chegou aqui, a permissão foi concedida
+                    stream.getTracks().forEach(track => track.stop()); // Para o stream de teste
+
+                    // Fecha o modal e inicia a gravação
+                    fecharModalPermissao();
+                    iniciarGravacaoReal();
+
+                } catch (error) {
+                    console.error('❌ Erro ao solicitar permissão:', error);
+                    console.error('Detalhes do erro:', {
+                        name: error.name,
+                        message: error.message,
+                        stack: error.stack
+                    });
+
+                    errorDiv.style.display = 'block';
+                    if (btnRequest) {
+                        btnRequest.disabled = false;
+                        btnRequest.textContent = '🎤 Solicitar Permissão de Microfone';
+                    }
+                    if (btnTryAgain) btnTryAgain.style.display = 'block';
+                    if (btnReload) btnReload.style.display = 'block';
+
+                    let mensagem = '';
+                    let instrucoes = '';
+
+                    if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
+                        mensagem = '❌ Permissão negada pelo navegador.';
+                        instrucoes = isAndroid()
+                            ? '<br><br><strong>📱 Para Android:</strong><br>' +
+                            '1. Vá em <strong>Configurações → Aplicativos → Chrome → Permissões → Microfone</strong><br>' +
+                            '2. Certifique-se de que está <strong>ATIVADO</strong><br>' +
+                            '3. Feche completamente o Chrome (não apenas a aba)<br>' +
+                            '4. Abra o Chrome novamente e tente novamente<br>' +
+                            '5. Se ainda não funcionar, clique em "Recarregar Página"'
+                            : '<br><br>Por favor, permita o acesso ao microfone quando o navegador solicitar.';
+                    } else if (error.name === 'NotFoundError' || error.name === 'DevicesNotFoundError') {
+                        mensagem = '❌ Nenhum microfone encontrado.';
+                        instrucoes = 'Verifique se há um microfone conectado ou disponível no dispositivo.';
+                    } else if (error.name === 'NotReadableError' || error.name === 'TrackStartError') {
+                        mensagem = '❌ O microfone está sendo usado por outro aplicativo.';
+                        instrucoes = 'Feche outros aplicativos que possam estar usando o microfone e tente novamente.';
+                    } else if (error.name === 'OverconstrainedError' || error.name === 'ConstraintNotSatisfiedError') {
+                        mensagem = '❌ As configurações do microfone não são suportadas.';
+                        instrucoes = 'Tente usar um navegador diferente ou atualize seu navegador.';
+                    } else {
+                        mensagem = '❌ Erro ao acessar o microfone: ' + (error.message || error.name);
+                        instrucoes = isAndroid()
+                            ? '<br><br><strong>📱 Tente:</strong><br>' +
+                            '1. Recarregar a página<br>' +
+                            '2. Fechar e reabrir o navegador<br>' +
+                            '3. Verificar permissões nas configurações do Android'
+                            : 'Verifique as configurações do navegador.';
+                    }
+
+                    errorDetails.innerHTML = mensagem + instrucoes;
+                }
+            } catch (unexpectedError) {
+                // Erro inesperado - não deveria acontecer, mas captura para debug
+                console.error('❌ Erro inesperado em solicitarPermissaoMicrofone:', unexpectedError);
+                const errorDiv = document.getElementById('permission-error');
+                const errorDetails = document.getElementById('error-details');
+                const btnRequest = document.getElementById('btn-request-permission');
+
+                if (errorDiv && errorDetails) {
+                    errorDiv.style.display = 'block';
+                    errorDetails.innerHTML =
+                        '❌ Erro inesperado: ' + (unexpectedError.message || 'Erro desconhecido') +
+                        '<br><br>Por favor, recarregue a página e tente novamente.';
+                }
+
+                if (btnRequest) {
+                    btnRequest.disabled = false;
+                    btnRequest.textContent = '🎤 Solicitar Permissão de Microfone';
+                }
+            }
+        }
+
+        async function tentarNovamentePermissao() {
+            // Limpa estado anterior
+            document.getElementById('permission-error').style.display = 'none';
+            document.getElementById('btn-try-again').style.display = 'none';
+            document.getElementById('btn-reload').style.display = 'none';
+
+            // Aguarda um pouco antes de tentar novamente
+            await new Promise(resolve => setTimeout(resolve, 500));
+
+            // Tenta novamente
+            await solicitarPermissaoMicrofone();
+        }
+
+        function recarregarPagina() {
+            if (confirm('Deseja recarregar a página? Isso pode ajudar após configurar as permissões.')) {
+                window.location.reload();
+            }
+        }
+
+        function switchTab(tabName, event) {
+            // Remove active de todas as tabs e contents
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+            // Ativa a tab selecionada
+            if (event) {
+                event.target.classList.add('active');
+            } else {
+                // Fallback caso o evento não seja passado (ex: chamada programática)
+                // Tenta encontrar o botão correspondente
+                const buttons = document.querySelectorAll('.tab');
+                buttons.forEach(btn => {
+                    if (btn.getAttribute('onclick').includes(`'${tabName}'`)) {
+                        btn.classList.add('active');
+                    }
+                });
+            }
+
+            document.getElementById(`tab-${tabName}`).classList.add('active');
+
+            // Se for a aba de gastos, carrega a lista
+            if (tabName === 'gastos') {
+                carregarGastos();
+            }
+        }
+
+        async function processarTexto(event) {
+            event.preventDefault();
+            const texto = document.getElementById('texto').value;
+            const loading = document.getElementById('loading-texto');
+            const result = document.getElementById('result-texto');
+            const btn = document.getElementById('btn-texto');
+
+            loading.classList.add('active');
+            result.classList.remove('active');
+            btn.disabled = true;
+
+            try {
+                const response = await fetch(`${API_BASE}/processar-texto`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ texto })
+                });
+
+                const data = await response.json();
+                mostrarResultado('result-texto', data);
+            } catch (error) {
+                mostrarErro('result-texto', error.message);
+            } finally {
+                loading.classList.remove('active');
+                btn.disabled = false;
+            }
+        }
+
+        async function iniciarGravacao() {
+            // Verifica se já tem permissão
+            const permissao = await verificarPermissaoMicrofone();
+
+            if (permissao === 'denied') {
+                // Permissão negada - mostra modal com instruções
+                abrirModalPermissao();
+                return;
+            }
+
+            if (permissao === 'prompt' || permissao === 'granted') {
+                // Tenta iniciar diretamente ou mostra modal se necessário
+                try {
+                    await iniciarGravacaoReal();
+                } catch (error) {
+                    // Se falhar, mostra o modal de permissão
+                    abrirModalPermissao();
+                }
+            }
+        }
+
+        async function iniciarGravacaoReal() {
+            try {
+                // Solicita permissão para usar o microfone
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+                // Cria o MediaRecorder
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+
+                // Evento quando dados estão disponíveis
+                mediaRecorder.ondataavailable = (event) => {
+                    if (event.data.size > 0) {
+                        audioChunks.push(event.data);
+                    }
+                };
+
+                // Evento quando a gravação termina
+                mediaRecorder.onstop = () => {
+                    audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                    const audioUrl = URL.createObjectURL(audioBlob);
+
+                    // Mostra o preview do áudio
+                    const audioPlayer = document.getElementById('audio-player');
+                    audioPlayer.src = audioUrl;
+                    document.getElementById('audio-preview').classList.add('active');
+
+                    // Para o stream
+                    stream.getTracks().forEach(track => track.stop());
+                };
+
+                // Inicia a gravação
+                mediaRecorder.start();
+
+                // Atualiza a UI
+                document.getElementById('btn-record').classList.add('recording');
+                document.getElementById('btn-record').disabled = true;
+                document.getElementById('btn-stop').style.display = 'block';
+                document.getElementById('recording-status').classList.add('active');
+                document.getElementById('recording-timer').style.display = 'block';
+
+                // Inicia o timer
+                recordingStartTime = Date.now();
+                recordingTimer = setInterval(atualizarTimer, 1000);
+
+            } catch (error) {
+                console.error('Erro ao iniciar gravação:', error);
+                // Se houver erro, mostra o modal de permissão com detalhes
+                abrirModalPermissao();
+
+                // Mostra erro específico no modal
+                setTimeout(() => {
+                    const errorDiv = document.getElementById('permission-error');
+                    const errorDetails = document.getElementById('error-details');
+                    const btnTryAgain = document.getElementById('btn-try-again');
+                    const btnReload = document.getElementById('btn-reload');
+
+                    if (errorDiv && errorDetails) {
+                        errorDiv.style.display = 'block';
+                        let mensagem = 'Erro ao acessar o microfone: ' + (error.message || error.name);
+
+                        if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
+                            mensagem = '❌ Permissão negada.';
+                            if (isAndroid()) {
+                                mensagem += '<br><br><strong>📱 Para Android:</strong><br>' +
+                                    '1. Feche completamente o Chrome (não apenas a aba)<br>' +
+                                    '2. Vá em Configurações → Aplicativos → Chrome → Permissões → Microfone<br>' +
+                                    '3. Certifique-se de que está ATIVADO<br>' +
+                                    '4. Abra o Chrome novamente<br>' +
+                                    '5. Recarregue esta página';
+                            }
+                        }
+
+                        errorDetails.innerHTML = mensagem;
+                        if (btnTryAgain) btnTryAgain.style.display = 'block';
+                        if (btnReload) btnReload.style.display = 'block';
+                    }
+                }, 100);
+            }
+        }
+
+        function pararGravacao() {
+            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                mediaRecorder.stop();
+
+                // Atualiza a UI
+                document.getElementById('btn-record').classList.remove('recording');
+                document.getElementById('btn-record').disabled = false;
+                document.getElementById('btn-stop').style.display = 'none';
+                document.getElementById('recording-status').classList.remove('active');
+
+                // Para o timer
+                if (recordingTimer) {
+                    clearInterval(recordingTimer);
+                    recordingTimer = null;
+                }
+                document.getElementById('recording-timer').style.display = 'none';
+            }
+        }
+
+        function atualizarTimer() {
+            if (recordingStartTime) {
+                const elapsed = Math.floor((Date.now() - recordingStartTime) / 1000);
+                const minutes = Math.floor(elapsed / 60).toString().padStart(2, '0');
+                const seconds = (elapsed % 60).toString().padStart(2, '0');
+                document.getElementById('recording-timer').textContent = `${minutes}:${seconds}`;
+            }
+        }
+
+        async function enviarAudioGravado() {
+            if (!audioBlob) {
+                alert('Nenhum áudio gravado. Por favor, grave um áudio primeiro.');
+                return;
+            }
+
+            const loading = document.getElementById('loading-audio');
+            const result = document.getElementById('result-audio');
+
+            loading.classList.add('active');
+            result.classList.remove('active');
+
+            try {
+                // Cria um arquivo a partir do blob
+                const audioFile = new File([audioBlob], 'gravacao.webm', { type: 'audio/webm' });
+                const formData = new FormData();
+                formData.append('file', audioFile);
+
+                const response = await fetch(`${API_BASE}/processar-audio`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+                mostrarResultado('result-audio', data);
+
+                // Limpa a gravação após envio
+                audioBlob = null;
+                document.getElementById('audio-preview').classList.remove('active');
+                document.getElementById('audio-player').src = '';
+
+            } catch (error) {
+                mostrarErro('result-audio', error.message);
+            } finally {
+                loading.classList.remove('active');
+            }
+        }
+
+        async function processarAudio(event) {
+            event.preventDefault();
+            const fileInput = document.getElementById('audio');
+            const file = fileInput.files[0];
+            const loading = document.getElementById('loading-audio');
+            const result = document.getElementById('result-audio');
+            const btn = document.getElementById('btn-audio');
+
+            if (!file) {
+                alert('Por favor, selecione um arquivo de áudio');
+                return;
+            }
+
+            loading.classList.add('active');
+            result.classList.remove('active');
+            btn.disabled = true;
+
+            try {
+                const formData = new FormData();
+                formData.append('file', file);
+
+                const response = await fetch(`${API_BASE}/processar-audio`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+                mostrarResultado('result-audio', data);
+                fileInput.value = ''; // Limpa o input
+            } catch (error) {
+                mostrarErro('result-audio', error.message);
+            } finally {
+                loading.classList.remove('active');
+                btn.disabled = false;
+            }
+        }
+
+        function mostrarResultado(elementId, data) {
+            const result = document.getElementById(elementId);
+            result.classList.add('active');
+
+            if (data.sucesso && data.gasto) {
+                result.className = 'result success active';
+                result.innerHTML = `
+                    <h3>✅ Gasto registrado com sucesso!</h3>
+                    <div class="result-item"><strong>Item:</strong> ${data.gasto.item}</div>
+                    <div class="result-item"><strong>Valor:</strong> R$ ${data.gasto.valor.toFixed(2)}</div>
+                    <div class="result-item"><strong>Categoria:</strong> ${data.gasto.categoria}</div>
+                    ${data.gasto.meio_pagamento ? `<div class="result-item"><strong>Pagamento:</strong> ${data.gasto.meio_pagamento}</div>` : ''}
+                    ${data.texto_processado ? `<div class="result-item"><strong>Texto processado:</strong> ${data.texto_processado}</div>` : ''}
+                `;
+                // Limpa o formulário
+                document.getElementById('texto').value = '';
+                document.getElementById('audio').value = '';
+            } else {
+                result.className = 'result error active';
+                result.innerHTML = `
+                    <h3>❌ Erro ao processar</h3>
+                    <div class="result-item">${data.erro || 'Erro desconhecido'}</div>
+                    ${data.texto_processado ? `<div class="result-item"><strong>Texto processado:</strong> ${data.texto_processado}</div>` : ''}
+                `;
+            }
+        }
+
+        function mostrarErro(elementId, mensagem) {
+            const result = document.getElementById(elementId);
+            result.className = 'result error active';
+            result.innerHTML = `
+                <h3>❌ Erro</h3>
+                <div class="result-item">${mensagem}</div>
+            `;
+        }
+
+        async function carregarGastos() {
+            const gastosList = document.getElementById('gastos-list');
+            gastosList.innerHTML = '<p>Carregando...</p>';
+
+            try {
+                const response = await fetch(`${API_BASE}/gastos`);
+                const gastos = await response.json();
+
+                if (gastos.length === 0) {
+                    gastosList.innerHTML = '<p>Nenhum gasto registrado ainda.</p>';
+                    return;
+                }
+
+                gastosList.innerHTML = gastos.map(gasto => `
+                    <div class="gasto-card">
+                        <div class="gasto-header">
+                            <span class="gasto-valor">R$ ${gasto.valor.toFixed(2)}</span>
+                            <span class="gasto-categoria">${gasto.categoria}</span>
+                        </div>
+                        <div class="gasto-item">${gasto.item}</div>
+                        ${gasto.meio_pagamento ? `<div style="color: #666; font-size: 12px; margin-top: 4px;">💳 ${gasto.meio_pagamento}</div>` : ''}
+                        ${gasto.descricao_original ? `<div style="color: #666; font-size: 12px; margin-top: 4px;">"${gasto.descricao_original}"</div>` : ''}
+                        <div class="gasto-data">${new Date(gasto.data_criacao).toLocaleString('pt-BR')}</div>
+                        <div class="gasto-actions">
+                            <button class="btn-edit" onclick="abrirModalEdicao(${gasto.id})">✏️ Editar</button>
+                            <button class="btn-delete" onclick="deletarGasto(${gasto.id})">🗑️ Deletar</button>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                gastosList.innerHTML = `<p style="color: red;">Erro ao carregar gastos: ${error.message}</p>`;
+            }
+        }
+
+        async function deletarGasto(id) {
+            if (!confirm('Tem certeza que deseja deletar este gasto?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/gastos/${id}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    carregarGastos();
+                } else {
+                    alert('Erro ao deletar gasto');
+                }
+            } catch (error) {
+                alert(`Erro: ${error.message}`);
+            }
+        }
+
+        async function abrirModalEdicao(gastoId) {
+            try {
+                // Busca os dados do gasto
+                const response = await fetch(`${API_BASE}/gastos/${gastoId}`);
+                if (!response.ok) {
+                    alert('Erro ao carregar dados do gasto');
+                    return;
+                }
+
+                const gasto = await response.json();
+
+                // Preenche o formulário
+                document.getElementById('edit-gasto-id').value = gasto.id;
+                document.getElementById('edit-valor').value = gasto.valor;
+                document.getElementById('edit-item').value = gasto.item;
+                document.getElementById('edit-categoria').value = gasto.categoria;
+                document.getElementById('edit-pagamento').value = gasto.meio_pagamento || '';
+                document.getElementById('edit-descricao').value = gasto.descricao_original || '';
+
+                // Abre o modal
+                document.getElementById('modal-editar').classList.add('active');
+            } catch (error) {
+                alert(`Erro ao carregar dados: ${error.message}`);
+            }
+        }
+
+        function fecharModal() {
+            document.getElementById('modal-editar').classList.remove('active');
+            document.getElementById('form-editar').reset();
+        }
+
+        async function salvarEdicao(event) {
+            event.preventDefault();
+
+            const gastoId = document.getElementById('edit-gasto-id').value;
+            const valor = parseFloat(document.getElementById('edit-valor').value);
+            const item = document.getElementById('edit-item').value;
+            const categoria = document.getElementById('edit-categoria').value;
+            const pagamento = document.getElementById('edit-pagamento').value;
+            const descricao = document.getElementById('edit-descricao').value;
+
+            if (valor <= 0) {
+                alert('O valor deve ser maior que zero');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/gastos/${gastoId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        valor: valor,
+                        item: item,
+                        categoria: categoria,
+                        meio_pagamento: pagamento || null,
+                        descricao_original: descricao || null
+                    })
+                });
+
+                if (response.ok) {
+                    fecharModal();
+                    carregarGastos();
+                } else {
+                    const error = await response.json();
+                    alert(`Erro ao salvar: ${error.detail || 'Erro desconhecido'}`);
+                }
+            } catch (error) {
+                alert(`Erro ao salvar: ${error.message}`);
+            }
+        }
+
+        // Fecha o modal ao clicar fora dele
+        document.addEventListener('click', function (event) {
+            const modal = document.getElementById('modal-editar');
+            if (event.target === modal) {
+                fecharModal();
+            }
+        });
+
+        // Fecha o modal com ESC
+        document.addEventListener('keydown', function (event) {
+            if (event.key === 'Escape') {
+                fecharModal();
+                fecharModalPermissao();
+            }
+        });
+        async function adicionarGastoManual(event) {
+            event.preventDefault();
+
+            const btn = document.getElementById('btn-manual');
+            const resultDiv = document.getElementById('result-manual');
+
+            const valor = parseFloat(document.getElementById('manual-valor').value);
+            const item = document.getElementById('manual-item').value;
+            const categoria = document.getElementById('manual-categoria').value;
+            const pagamento = document.getElementById('manual-pagamento').value;
+
+            btn.disabled = true;
+            btn.textContent = 'Adicionando...';
+            resultDiv.className = 'result';
+            resultDiv.style.display = 'none';
+
+            try {
+                const response = await fetch(`${API_BASE}/gastos`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        valor: valor,
+                        item: item,
+                        categoria: categoria,
+                        descricao_original: `Inserção manual: ${item} - R$ ${valor}`
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    resultDiv.className = 'result success active';
+                    resultDiv.innerHTML = `
+                        <h3>✅ Gasto Adicionado!</h3>
+                        <div class="result-item"><strong>Item:</strong> ${data.item}</div>
+                        <div class="result-item"><strong>Valor:</strong> R$ ${data.valor.toFixed(2)}</div>
+                        <div class="result-item"><strong>Categoria:</strong> ${data.categoria}</div>
+                    `;
+
+                    // Limpar formulário
+                    document.getElementById('form-manual').reset();
+
+                    // Atualizar lista de gastos se já estiver carregada
+                    carregarGastos();
+                } else {
+                    throw new Error(data.detail || 'Erro ao adicionar gasto');
+                }
+            } catch (error) {
+                resultDiv.className = 'result error active';
+                resultDiv.innerHTML = `
+                    <h3>❌ Erro</h3>
+                    <p>${error.message}</p>
+                `;
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Adicionar Gasto';
+            }
+        }
+    </script>
+</body>
+
+</html>
