@@ -2,7 +2,7 @@
 
 # Directory definitions
 WHISPER_SCRIPT="whisper/baixar.py"
-MODEL_DIR="whisper_models"
+MODEL_DIR="whisper/whisper_models"
 
 # Check if model directory exists and is not empty
 if [ ! -d "$MODEL_DIR" ] || [ -z "$(ls -A "$MODEL_DIR")" ]; then
@@ -31,6 +31,32 @@ if [ ! -d "$MODEL_DIR" ] || [ -z "$(ls -A "$MODEL_DIR")" ]; then
     fi
 else
     echo "✅  Whisper models found in $MODEL_DIR."
+fi
+
+# Check for SSL certificates
+CERTS_DIR="API Python/certs"
+if [ ! -f "$CERTS_DIR/cert.pem" ] || [ ! -f "$CERTS_DIR/key.pem" ]; then
+    echo "⚠️  SSL certificates not found in $CERTS_DIR."
+    echo "🔐 Generating self-signed certificates..."
+    
+    # Check if python3 is available (reusing check if possible, but good to be safe)
+    if command -v python3 &> /dev/null; then
+        # Run the generation script from the API Python directory to ensure correct output path
+        (cd "API Python" && python3 "scripts/generate_cert.py")
+        if [ $? -ne 0 ]; then
+             echo "❌  Failed to generate certificates."
+             # Not exiting here to allow user to proceed if they really want to, 
+             # but warning is clear. Or maybe we should exit? 
+             # The plan said "Ensure the script handles the certificate generation before starting Docker containers."
+             # Let's exit on failure to be safe.
+             exit 1
+        fi
+    else
+         echo "❌  python3 not found. Cannot generate certificates."
+         exit 1
+    fi
+else
+    echo "✅  SSL certificates found in $CERTS_DIR."
 fi
 
 echo "🚀  Starting applications with Docker Compose..."

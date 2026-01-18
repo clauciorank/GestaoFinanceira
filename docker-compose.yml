@@ -16,6 +16,9 @@ services:
       - LLM_URL=http://vllm:8000/v1
       - LLM_API_KEY=EMPTY
       - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - USE_HTTPS=true
+    volumes:
+      - ./API Python/certs:/app/certs
     depends_on:
       db:
         condition: service_healthy
@@ -32,7 +35,7 @@ services:
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_DATABASE: gestor_financeiro 
+      MYSQL_DATABASE: gestor_financeiro
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     ports:
