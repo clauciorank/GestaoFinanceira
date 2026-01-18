@@ -1,6 +1,6 @@
 # 💰 Gestor Financeiro Inteligente
 
-Um sistema completo de gestão financeira pessoal que utiliza Inteligência Artificial para processar gastos via texto e áudio. O projeto integra reconhecimento de fala (Whisper), processamento de linguagem natural (LLM) e dashboards interativos.
+Um sistema de gestão financeira pessoal que utiliza Inteligência Artificial para processar gastos via texto e áudio. O projeto integra reconhecimento de fala (Whisper), processamento de linguagem natural (LLM) e dashboards interativos.
 
 ## 🏗️ Arquitetura do Projeto
 
