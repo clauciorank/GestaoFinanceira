@@ -87,7 +87,7 @@ services:
               count: 1
               capabilities: [gpu]
     volumes:
-      - ./whisper_models:/models
+      - ./whisper/whisper_models:/models
     networks:
       - app_network
 

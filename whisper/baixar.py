@@ -3,7 +3,7 @@ import os
 
 MODEL_NAME = "small"
 # Garante que o caminho seja absoluto e limpo
-CACHE_DIR = os.path.abspath("./whisper_models")
+CACHE_DIR = os.path.abspath("./whisper/whisper_models")
 
 # Configura as variáveis de ambiente para o local desejado
 os.environ["HF_HOME"] = CACHE_DIR
